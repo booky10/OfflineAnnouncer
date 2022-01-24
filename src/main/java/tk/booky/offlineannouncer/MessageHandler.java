@@ -60,14 +60,16 @@ public class MessageHandler {
                     if (result != null) return result;
                 }
             } else if (!USERNAME_PATTERN.matcher(creator.getName()).matches()) {
-                return "Invalid username: " + creator.getName();
+                // This could be something like "@everyone" or "@here", but we don't care.
+                // All mentions have been disabled on bot startup.
+                return "Invalid username: `" + creator.getName()+ "`";
             } else {
                 UUID offlineUuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + creator.getName())
                     .getBytes(StandardCharsets.UTF_8));
                 UUID uniqueId = UUID.fromString(creator.getUniqueId());
 
                 if (offlineUuid.equals(uniqueId)) {
-                    return "Offline unique id: " + creator.getUniqueId();
+                    return "Offline unique id: `" + creator.getUniqueId() + "`";
                 } else {
                     String undashedId;
                     synchronized (UUIDS) {
@@ -92,7 +94,7 @@ public class MessageHandler {
                             if (result != null) return result;
                         }
                     } else {
-                        return "Invalid unique id " + creator.getUniqueId() + " for player " + creator.getName();
+                        return "Invalid unique id `" + creator.getUniqueId() + "` for player `" + creator.getName() + "`";
                     }
                 }
             }
@@ -139,7 +141,7 @@ public class MessageHandler {
         Set<String> sources = new HashSet<>(data.getClassSourcesMap().values());
         for (String invalidPlugin : config.invalidPlugins()) {
             if (sources.contains(invalidPlugin)) {
-                return "Invalid plugin " + invalidPlugin;
+                return "Invalid plugin: `" + invalidPlugin + "`";
             }
         }
         return null;
