@@ -4,6 +4,8 @@ package tk.booky.offlineannouncer;
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.core.object.presence.ClientActivity;
+import discord4j.core.object.presence.ClientPresence;
 import discord4j.rest.request.GlobalRateLimiter;
 import discord4j.rest.util.AllowedMentions;
 import reactor.core.publisher.Mono;
@@ -39,7 +41,10 @@ public class OFBot {
                 }
             })).then();
 
-            return ready.and(message);
+            Mono<Void> presence = gateway.updatePresence(ClientPresence.online(
+                ClientActivity.watching("spark reports"))).then();
+
+            return ready.and(message).and(presence);
         });
 
         LOGGER.info("Logging in...");
