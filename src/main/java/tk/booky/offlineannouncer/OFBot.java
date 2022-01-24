@@ -3,6 +3,7 @@ package tk.booky.offlineannouncer;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.lifecycle.ReadyEvent;
+import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.rest.request.GlobalRateLimiter;
 import discord4j.rest.util.AllowedMentions;
 import reactor.core.publisher.Mono;
@@ -27,10 +28,19 @@ public class OFBot {
             .setDefaultAllowedMentions(AllowedMentions.suppressAll())
             .setGlobalRateLimiter(GlobalRateLimiter.create()).build();
 
-        Mono<Void> login = client.withGateway(gateway ->
-            gateway.on(ReadyEvent.class, event ->
-                Mono.fromRunnable(() ->
-                    LOGGER.info("Logged in as " + event.getSelf().getTag()))));
+        Mono<Void> login = client.withGateway(gateway -> {
+            Mono<Void> ready = gateway.on(ReadyEvent.class, event -> Mono.fromRunnable(() ->
+                LOGGER.info("Logged in as " + event.getSelf().getTag()))).then();
+
+            Mono<Void> message = gateway.on(MessageCreateEvent.class, event -> Mono.fromRunnable(() -> {
+                if (event.getGuildId().isPresent()) {
+                    String result = MessageHandler.handleMessage(event);
+                    System.out.println(result);
+                }
+            })).then();
+
+            return ready.and(message);
+        });
 
         LOGGER.info("Logging in...");
         login.block();

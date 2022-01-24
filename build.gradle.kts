@@ -1,3 +1,5 @@
+import com.google.protobuf.gradle.generateProtoTasks
+import com.google.protobuf.gradle.protoc
 import java.io.ByteArrayOutputStream
 
 plugins {
@@ -5,6 +7,7 @@ plugins {
     `java-library`
     `maven-publish`
 
+    id("com.google.protobuf") version "0.8.16"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
@@ -32,6 +35,11 @@ repositories {
 
 dependencies {
     api("com.discord4j:discord4j-core:3.2.1")
+
+    api("com.google.protobuf:protobuf-javalite:3.19.3")
+    api("com.github.ben-manes.caffeine:caffeine:3.0.5")
+
+    api("com.google.guava:guava:31.0.1-jre")
     api("com.google.code.gson:gson:2.8.9")
 }
 
@@ -64,4 +72,19 @@ tasks {
 
 application {
     mainClass.set(main)
+}
+
+protobuf {
+    protobuf.protoc {
+        artifact = "com.google.protobuf:protoc:3.15.6"
+    }
+
+    protobuf.generatedFilesBaseDir = "src"
+    protobuf.generateProtoTasks {
+        all().forEach { task ->
+            task.builtins.forEach {
+                it.option("lite")
+            }
+        }
+    }
 }
