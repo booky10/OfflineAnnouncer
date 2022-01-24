@@ -32,6 +32,7 @@ repositories {
 
 dependencies {
     api("com.discord4j:discord4j-core:3.2.1")
+    api("com.google.code.gson:gson:2.8.9")
 }
 
 java {
