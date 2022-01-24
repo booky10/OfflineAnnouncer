@@ -6,6 +6,8 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
+import discord4j.core.object.reaction.ReactionEmoji;
+import discord4j.core.spec.MessageCreateSpec;
 import discord4j.rest.request.GlobalRateLimiter;
 import discord4j.rest.util.AllowedMentions;
 import reactor.core.publisher.Mono;
@@ -34,12 +36,20 @@ public class OFBot {
             Mono<Void> ready = gateway.on(ReadyEvent.class, event -> Mono.fromRunnable(() ->
                 LOGGER.info("Logged in as " + event.getSelf().getTag()))).then();
 
-            Mono<Void> message = gateway.on(MessageCreateEvent.class, event -> Mono.fromRunnable(() -> {
+            Mono<Void> message = gateway.on(MessageCreateEvent.class, event -> {
                 if (event.getGuildId().isPresent()) {
                     String result = MessageHandler.handleMessage(event, config);
-                    System.out.println(result);
+                    if (result != null) {
+                        return event.getMessage().addReaction(ReactionEmoji.unicode("🤔"))
+                            .and(event.getMessage().getChannel().flatMap(channel ->
+                                channel.createMessage(MessageCreateSpec.builder()
+                                    .messageReference(event.getMessage().getId())
+                                    .content("Are you using offline mode? (" + result + ")").build())));
+                    }
                 }
-            })).then();
+
+                return Mono.empty();
+            }).then();
 
             Mono<Void> presence = gateway.updatePresence(ClientPresence.online(
                 ClientActivity.watching("spark reports"))).then();
