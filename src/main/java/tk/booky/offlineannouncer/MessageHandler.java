@@ -35,7 +35,7 @@ public class MessageHandler {
     private static final String BYTE_BIN_URL = "https://bytebin.lucko.me/";
     private static final Gson GSON = new Gson();
 
-    public static String handleMessage(MessageCreateEvent event) {
+    public static String handleMessage(MessageCreateEvent event, BotConfiguration config) {
         String stripped = event.getMessage().getContent().replaceAll("[_´~*|\\\\]", "");
         Matcher matcher = SPARK_URL_PATTERN.matcher(stripped);
 
@@ -56,7 +56,7 @@ public class MessageHandler {
                 // The plugins can only be searched with the sampler, the heap summary
                 // doesn't contain the server plugins.
                 if (data instanceof SamplerData) {
-                    String result = searchPlugins((SamplerData) data);
+                    String result = searchPlugins((SamplerData) data, config);
                     if (result != null) return result;
                 }
             } else if (!USERNAME_PATTERN.matcher(creator.getName()).matches()) {
@@ -88,7 +88,7 @@ public class MessageHandler {
                         // The plugins can only be searched with the sampler, the heap summary
                         // doesn't contain the server plugins.
                         if (data instanceof SamplerData) {
-                            String result = searchPlugins((SamplerData) data);
+                            String result = searchPlugins((SamplerData) data, config);
                             if (result != null) return result;
                         }
                     } else {
@@ -135,8 +135,13 @@ public class MessageHandler {
         }
     }
 
-    private static String searchPlugins(SamplerData data) {
-        // Set<String> sources = new HashSet<>(data.getClassSourcesMap().values());
+    private static String searchPlugins(SamplerData data, BotConfiguration config) {
+        Set<String> sources = new HashSet<>(data.getClassSourcesMap().values());
+        for (String invalidPlugin : config.invalidPlugins()) {
+            if (sources.contains(invalidPlugin)) {
+                return "Invalid plugin " + invalidPlugin;
+            }
+        }
         return null;
     }
 }

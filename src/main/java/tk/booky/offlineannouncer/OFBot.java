@@ -34,7 +34,7 @@ public class OFBot {
 
             Mono<Void> message = gateway.on(MessageCreateEvent.class, event -> Mono.fromRunnable(() -> {
                 if (event.getGuildId().isPresent()) {
-                    String result = MessageHandler.handleMessage(event);
+                    String result = MessageHandler.handleMessage(event, config);
                     System.out.println(result);
                 }
             })).then();
