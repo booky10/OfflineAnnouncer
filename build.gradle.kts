@@ -1,3 +1,5 @@
+import java.io.ByteArrayOutputStream
+
 plugins {
     application
     `java-library`
@@ -6,8 +8,21 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
+fun getGitCommit(): String {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+        standardOutput = stdout
+    }
+
+    val commitHash = stdout.toString().trim()
+    println("Current short commit hash: $commitHash")
+
+    return commitHash
+}
+
 group = "tk.booky"
-version = "1.0.0"
+version = "1.0.0+${getGitCommit()}"
 
 val main = "${group}.${name.toLowerCase()}.${name}Main"
 
