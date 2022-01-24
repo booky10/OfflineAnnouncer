@@ -22,6 +22,6 @@ public class OfflineAnnouncerMain {
 
         Thread.currentThread().setName("bot-starter");
         LOGGER.info("Starting bot client...");
-        new OFBot(config).start();
+        new OfflineAnnouncerBot(config).start();
     }
 }
